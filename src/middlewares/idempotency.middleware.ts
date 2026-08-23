@@ -26,6 +26,41 @@ export const idempotencyMiddleware = async (req: Request, res: Response, next: N
     } as any;
     next();
 
+    const isAcquired = await redis.set(
+        cacheKey,
+        JSON.stringify({ status: "PROCESSING" }),
+        "EX",
+        3600,
+        "NX"
+    );
+    if (!isAcquired) {
+        const existing = await redis.get(cacheKey);
+        if (existing) {
+            const { status, body } = JSON.parse(existing);
+
+            if (status === "PROCESSING") {
+                return res.status(409).json({
+                    success: false,
+                    error: "Request is already being processed. Please wait."
+                });
+            }
+            return res.status(status).json(body);
+        }
+        const originalJson = res.json;
+        res.json = function (body: any) {
+            if (res.statusCode >= 500) {
+                redis.del(cacheKey);
+            } else {
+                redis.set(cacheKey, JSON.stringify({ status: res.statusCode, body }), "EX", 86400);
+            }
+            return originalJson.call(res, body);
+        } as any;
+    }
+
+
+
+
+
 }
 
 

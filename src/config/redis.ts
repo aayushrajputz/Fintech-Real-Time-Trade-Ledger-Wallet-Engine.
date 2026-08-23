@@ -1,10 +1,12 @@
 import { Redis } from "ioredis";
 import dotenv from "dotenv";
+import { env } from "./env.config.js";
 dotenv.config();
 
 export const redis = new Redis({
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
+    host: env.REDIS_HOST,
+    port: env.REDIS_PORT,
+    password: env.REDIS_PASSWORD,
 })
 
 redis.on("connect", () => {

@@ -8,7 +8,9 @@ export const envSchema = z.object({
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     JWT_SECRET: z.string().min(32, { message: "JWT_SECRET must be at least 32 char long for security" }),
     JWT_REFRESH_SECRET: z.string().min(32, { message: "JWT_REFRESH_SECRET must be at least 32 char long for security" }),
-
+    REDIS_HOST: z.string().default("localhost"),
+    REDIS_PORT: z.string().default("6379").transform((val) => parseInt(val, 10)),
+    REDIS_PASSWORD: z.string().optional(),
     DATABASE_URL: z.string().url({ message: "DATABASE_URL must be a valid connection URL" })
 })
 

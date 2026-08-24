@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import { env } from "../config/env.config.js";
 import * as userRepo from "../repositories/user.repository.js";
-import * as walletRepo from "../repositories/wallet.repository.js";
 import { BadRequestError, UnauthorizedError } from "../errors/app-errors.js";
 
 
@@ -20,9 +19,6 @@ export const signUp = async (name: string, email: string, password: string) => {
         email,
         password: hashedPassword
     })
-
-    // Auto-create wallet for new user
-    await walletRepo.createWallet(user.id);
 
     const accessToken = jwt.sign({
         userId: user.id,

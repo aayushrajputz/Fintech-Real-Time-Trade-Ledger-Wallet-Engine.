@@ -5,6 +5,8 @@ import { idempotencyMiddleware } from "../middlewares/idempotency.middleware.js"
 
 const router = Router()
 
+router.post("/create", authenticateJWT, WalletController.createWallet)
+
 router.post("/deposit", authenticateJWT, WalletController.deposit)
 
 router.post("/withdraw", authenticateJWT, WalletController.withdraw)

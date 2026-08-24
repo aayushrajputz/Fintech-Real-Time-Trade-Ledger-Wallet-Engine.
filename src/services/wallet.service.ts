@@ -1,6 +1,13 @@
 import { BadRequestError } from "../errors/app-errors.js";
 import * as walletRepo from "../repositories/wallet.repository.js";
 
+export const createWallet = async (userId: string) => {
+    const existingWallet = await walletRepo.findByUserId(userId);
+    if (existingWallet) {
+        throw new BadRequestError("Wallet already exists for this user");
+    }
+    return walletRepo.createWallet(userId);
+};
 
 export const deposit = async (userId: string, amount: number) => {
     if (amount <= 0) {

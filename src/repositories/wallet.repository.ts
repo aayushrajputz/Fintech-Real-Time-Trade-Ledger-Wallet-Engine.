@@ -1,6 +1,16 @@
 import { BadRequestError } from "../errors/app-errors.js";
 import { prisma } from "../config/db.js";
 
+export const createWallet = async (userId: string) => {
+    return await prisma.wallet.create({
+        data: {
+            userId,
+            balance: 0.00,
+            currency: "INR"
+        }
+    });
+};
+
 export const findByUserId = async (userId: string) => {
     return await prisma.wallet.findUnique({
         where: { userId }

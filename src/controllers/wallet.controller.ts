@@ -2,6 +2,20 @@ import { Request, Response, NextFunction } from "express";
 import * as walletService from "../services/wallet.service.js"
 import { BadRequestError } from "../errors/app-errors.js";
 
+export const createWallet = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = (req as any).user.id;
+        const result = await walletService.createWallet(userId);
+        res.status(201).json({
+            success: true,
+            message: "Wallet created successfully",
+            result
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export const deposit = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = (req as any).user.id

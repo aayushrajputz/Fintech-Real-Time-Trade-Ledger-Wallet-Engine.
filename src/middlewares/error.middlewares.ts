@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../errors/app-errors.js'; // local dev me .ts/.js imports follow structural config
 import { ZodError } from 'zod';
+import { logger } from '../utils/logger.js';
 
 export const globalErrorHandler = (
     err: Error,
@@ -33,10 +34,10 @@ export const globalErrorHandler = (
         });
     }
 
-    // If it is an unexpected system/programming bug (500)
-    console.error("🔥 SYSTEM ERROR:", err.stack || err);
-    console.error("🔥 ERROR KEYS:", Object.getOwnPropertyNames(err));
-    console.error("🔥 ERROR DETAIL:", JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+
+    logger.error("SYSTEM ERROR", err);
+
+
     return res.status(500).json({
         success: false,
         error: {

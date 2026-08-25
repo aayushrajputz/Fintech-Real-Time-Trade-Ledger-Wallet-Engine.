@@ -7,10 +7,12 @@ import authRoutes from "./routes/auth.routes.js";
 import walletRoutes from "./routes/wallet.routes.js";
 import orderRoutes from "./routes/order.routes.js"
 import "./config/redis.js";
+import { correlationMiddleware } from "./middlewares/correlation.middleware.js";
 
 const app = express();
 
 // Middleware Chain (Guards)
+app.use(correlationMiddleware);
 app.use(express.json());
 app.use(helmet());
 app.use(cors());

@@ -2,9 +2,8 @@
 node_modules/
 
 # Environment Variables & Secrets
-.env
-.env.*
-!.env.example
+.env 
+generated
 
 # Build Outputs
 dist/
@@ -12,7 +11,6 @@ build/
 *.tsbuildinfo
 
 # Generated Files
-/src/generated/
 
 # IDE & Tooling Folders
 .vscode/
@@ -30,11 +28,7 @@ logs/
 Thumbs.db
 
 # Documentation / Scratch / Development Files
-NOTES.md
-LLD_Master_Plan.md
-Backend_Master_Plan.md
+LLD_Master_plan.md
 
 # Lock Files & Local Config
-package-lock.json
-skills-lock.json
-docker-compose.yml
+

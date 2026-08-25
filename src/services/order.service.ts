@@ -14,7 +14,7 @@ export const placeOrder = async (
     const totalCost = quantity * orderPrice;
 
     const order = await prisma.$transaction(async (tx) => {
-        // 1. Fetch wallet inside transaction and lock the row
+
         const [wallet]: any[] = await tx.$queryRaw`
             SELECT * FROM "Wallet" WHERE "userId" = ${userId} FOR UPDATE
         `;

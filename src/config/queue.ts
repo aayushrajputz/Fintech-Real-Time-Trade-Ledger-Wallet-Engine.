@@ -1,6 +1,5 @@
 import { Queue } from "bullmq";
 import { env } from "./env.config.js";
-import { Query } from "pg";
 
 export const queueConnection = {
     host: env.REDIS_HOST,
@@ -11,4 +10,4 @@ export const queueConnection = {
 
 export const orderQueue = new Queue("order-processing", {
     connection: queueConnection
-}) 
+})

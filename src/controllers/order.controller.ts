@@ -1,17 +1,29 @@
 import { Request, Response, NextFunction } from "express";
-import * as orderService from "../services/order.service.js"
+import { orderQueue } from "../config/queue.js";
 
 export const placeOrder = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId = (req as any).user.id
         const { symbol, type, side, quantity, price } = req.body;
-        const result = await orderService.placeOrder(userId, symbol, type, side, quantity, price)
-        res.status(201).json({
+        const userId = (req as any).user.id;
+
+        const job = await orderQueue.add("process-order", {
+            userId,
+            symbol,
+            type,
+            side,
+            quantity,
+            price
+        });
+
+        return res.status(202).json({
             success: true,
-            message: "order placed",
-            result
-        })
+            message: "Order placed successfully and is being processed",
+            data: {
+                jobId: job.id,
+                status: "PENDING"
+            }
+        });
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};

@@ -6,7 +6,7 @@ export const createWallet = async (userId: string) => {
     if (existingWallet) {
         throw new BadRequestError("Wallet already exists for this user");
     }
-    return walletRepo.createWallet(userId);
+    return walletRepo.create({ userId });
 };
 
 export const deposit = async (userId: string, amount: number) => {

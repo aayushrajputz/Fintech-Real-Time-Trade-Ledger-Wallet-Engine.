@@ -99,4 +99,4 @@ graph TD
 ---
 
 ## 👨‍💻 Author & Maintainer
-**Aayush** - Backend Systems & Distributed Architecture Engineer
+**Aayush** - Backend Engineer

@@ -57,5 +57,14 @@ services:
     depends_on:
       - prometheus
 
+  nginx:
+    image: nginx:alpine
+    container_name: fintech_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+
+
 volumes:
   pgdata:

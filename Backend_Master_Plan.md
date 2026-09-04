@@ -1,13 +1,13 @@
-# 🚀 Enterprise Distributed Systems & 1M RPS Architecture Master Plan
+# 🚀 Enterprise Distributed Systems & 4k RPS Architecture Master Plan
 
 This master plan transitions you into an **Enterprise Distributed Systems Architect (SDE-2 / SDE-3 / Principal Engineer)**. It prioritizes production realities: LMAX Disruptor patterns, Kafka tuning for 1M msg/sec, Redis Atomic Lua Scripts, Go Microservices, Nginx load balancing, Vitest integration suites, Prometheus/Grafana telemetry, and K6 stress profiling.
 
 ---
 
-## 🏗️ Polyglot 1M RPS Target System Architecture
+## 🏗️ Polyglot 4000 RPS Target System Architecture
 
 ```
-[ Client / K6 Load Generator (50,000+ Concurrent VUs) ]
+[ Client / K6 Load Generator (4000+ Concurrent VUs) ]
                         │
                         ▼ (gRPC / HTTP 2 / uWebSockets)
 [ Edge Layer: Nginx Reverse Proxy / Load Balancer Cluster ]

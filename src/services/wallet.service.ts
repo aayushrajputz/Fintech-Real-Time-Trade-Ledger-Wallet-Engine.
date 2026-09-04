@@ -1,12 +1,28 @@
 import { BadRequestError } from "../errors/app-errors.js";
 import * as walletRepo from "../repositories/wallet.repository.js";
+import { redis } from "../config/redis.js";
+
+// Helper: Sync wallet balance from PostgreSQL to Redis Hash
+const syncWalletToRedis = async (userId: string) => {
+    const wallet = await walletRepo.findByUserId(userId);
+    if (wallet) {
+        const walletKey = `wallet:${userId}`;
+        await redis.hset(walletKey, "balance", Number(wallet.balance).toString());
+        await redis.hset(walletKey, "locked", Number(wallet.locked).toString());
+    }
+};
 
 export const createWallet = async (userId: string) => {
     const existingWallet = await walletRepo.findByUserId(userId);
     if (existingWallet) {
         throw new BadRequestError("Wallet already exists for this user");
     }
-    return walletRepo.create({ userId });
+    const wallet = await walletRepo.create({ userId });
+
+    // Sync new wallet to Redis (balance = 0, locked = 0)
+    await syncWalletToRedis(userId);
+
+    return wallet;
 };
 
 export const deposit = async (userId: string, amount: number) => {
@@ -19,7 +35,12 @@ export const deposit = async (userId: string, amount: number) => {
         throw new BadRequestError("Wallet not found");
     }
 
-    return walletRepo.depositFunds(wallet.id, amount, "Wallet Deposit");
+    const result = await walletRepo.depositFunds(wallet.id, amount, "Wallet Deposit");
+
+    // Sync updated balance to Redis after successful DB deposit
+    await syncWalletToRedis(userId);
+
+    return result;
 };
 
 export const withdraw = async (userId: string, amount: number) => {

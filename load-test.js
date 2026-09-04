@@ -3,8 +3,8 @@ import { check, sleep } from 'k6';
 
 export const options = {
     stages: [
-        { duration: '15s', target: 200 },  // Ramp up to 200 VUs
-        { duration: '30s', target: 1000 }, // Peak at 1,000 Virtual Users
+        { duration: '15s', target: 500 },  // Ramp up to 500 VUs
+        { duration: '30s', target: 4000 }, // Peak at 3,000 Virtual Users
         { duration: '15s', target: 0 },    // Ramp down
     ],
 };

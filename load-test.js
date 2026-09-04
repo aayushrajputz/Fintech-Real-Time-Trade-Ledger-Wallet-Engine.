@@ -10,7 +10,7 @@ export const options = {
 };
 
 export default function () {
-    const url = 'http://localhost:8000/api/v1/order/place';
+    const url = 'http://localhost/api/v1/order/place';
 
     const payload = JSON.stringify({
         symbol: 'BTC_USDT',

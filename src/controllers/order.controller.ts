@@ -3,6 +3,7 @@ import { orderQueue } from "../config/queue.js";
 import { sendOrderEvent } from "../services/kafka.service.js";
 import { reserveBalanceAtomic } from "../scripts/wallet.lua.js";
 import { BadRequestError } from "../errors/app-errors.js";
+import { redis } from "../config/redis.js";
 
 export const placeOrder = async (req: Request, res: Response, next: NextFunction) => {
     try {

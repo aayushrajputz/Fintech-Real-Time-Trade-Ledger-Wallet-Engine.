@@ -3,6 +3,8 @@ package models
 import "fmt"
 
 type Order struct {
+	ID       string  `json:"id"`
+	UserId   string  `json:"userId"`
 	Symbol   string  `json:"symbol"`
 	Side     string  `json:"side"`
 	Price    float64 `json:"price"`

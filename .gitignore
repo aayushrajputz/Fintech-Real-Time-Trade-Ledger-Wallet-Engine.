@@ -2,7 +2,7 @@
 node_modules/
 
 # Environment Variables & Secrets
-.env 
+.env
 generated
 
 # Build Outputs

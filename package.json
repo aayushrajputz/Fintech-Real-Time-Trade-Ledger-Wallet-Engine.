@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsc-watch --onSuccess \"node dist/server.js\"",
+    "dev2": "node dist/server2.js",
     "build": "tsc",
     "test": "vitest run"
   },

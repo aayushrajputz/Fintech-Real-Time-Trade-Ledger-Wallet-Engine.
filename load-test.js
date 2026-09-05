@@ -12,10 +12,13 @@ export const options = {
 export default function () {
     const url = 'http://localhost/api/v1/order/place';
 
+    const sides = ['BUY', 'SELL'];
+    const randomSide = sides[Math.floor(Math.random() * sides.length)];
+
     const payload = JSON.stringify({
         symbol: 'BTC_USDT',
         type: 'LIMIT',
-        side: 'BUY',
+        side: randomSide,
         quantity: 1,
         price: 50000,
     });
@@ -31,7 +34,7 @@ export default function () {
     const res = http.post(url, payload, params);
 
     check(res, {
-        'status is 202 or 401 or 429': (r) => r.status === 202 || r.status === 401 || r.status === 429,
+        'status is 201 or 202 or 200': (r) => r.status === 201 || r.status === 202 || r.status === 200,
     });
 
     sleep(0.05);

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"matching-engine/models"
 	"matching-engine/producer"
+	"sort"
 )
 
 type OrderBook struct {
@@ -16,6 +17,22 @@ func NewOrderBook() *OrderBook {
 		BuyOrders:  []models.Order{},
 		SellOrders: []models.Order{},
 	}
+}
+
+func (ob *OrderBook) AddOrder(order models.Order) {
+	if order.Side == "BUY" {
+		ob.BuyOrders = append(ob.BuyOrders, order)
+		sort.Slice(ob.BuyOrders, func(i, j int) bool {
+			return ob.BuyOrders[i].Price > ob.BuyOrders[j].Price
+		})
+	} else {
+		ob.SellOrders = append(ob.SellOrders, order)
+		sort.Slice(ob.SellOrders, func(i, j int) bool {
+			return ob.SellOrders[i].Price < ob.SellOrders[j].Price
+		})
+	}
+
+	fmt.Printf("Added: %s\n", order)
 }
 
 func (ob *OrderBook) MatchOrders() {

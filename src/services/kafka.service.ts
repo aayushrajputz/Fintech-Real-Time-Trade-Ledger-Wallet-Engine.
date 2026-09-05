@@ -19,12 +19,9 @@ export const sendOrderEvent = async (topic: string, eventData: any) => {
                 {
                     key: eventData.userId || "order-key",
                     value: JSON.stringify(eventData),
-
-
                 }
             ]
-        })
-        logger.info(`Event published to kafka topic ${topic}`, { eventData })
+        });
 
     } catch (err) {
         logger.error(`Failed to publish order event to kafka : `, err);

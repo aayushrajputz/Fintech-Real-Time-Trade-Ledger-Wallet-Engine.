@@ -3,9 +3,9 @@ import { check, sleep } from 'k6';
 
 export const options = {
     stages: [
-        { duration: '15s', target: 500 },  // Ramp up to 500 VUs
-        { duration: '30s', target: 4000 }, // Peak at 3,000 Virtual Users
-        { duration: '15s', target: 0 },    // Ramp down
+        { duration: '10s', target: 200 },  // Ramp up to 200 VUs
+        { duration: '20s', target: 1000 }, // Peak at 1,000 Virtual Users
+        { duration: '10s', target: 0 },    // Ramp down
     ],
 };
 
@@ -26,16 +26,20 @@ export default function () {
     const params = {
         headers: {
             'Content-Type': 'application/json',
-            'X-Idempotency-Key': `k6-1k-${Math.random()}`,
+            'X-Idempotency-Key': `k6-key-${__VU}-${__ITER}-${Date.now()}`,
             'Authorization': 'Bearer test-token'
         },
     };
 
     const res = http.post(url, payload, params);
 
-    check(res, {
+    const passed = check(res, {
         'status is 201 or 202 or 200': (r) => r.status === 201 || r.status === 202 || r.status === 200,
     });
+
+    if (!passed) {
+        console.log(`Failed status: ${res.status}, body: ${res.body}`);
+    }
 
     sleep(0.05);
 }

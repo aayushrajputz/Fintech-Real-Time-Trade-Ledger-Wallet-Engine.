@@ -6,38 +6,24 @@ export const idempotencyMiddleware = async (req: Request, res: Response, next: N
     const idempotencyKey = req.headers["x-idempotency-key"] as string;
 
     if (!idempotencyKey) {
-        throw new BadRequestError("X-idempotency-key header is required")
+        return next(new BadRequestError("X-idempotency-key header is required"));
     }
-
 
     const cacheKey = `idempotency:${idempotencyKey}`;
-    const existing = await redis.get(cacheKey)
 
-    if (existing) {
-        const { status, body } = JSON.parse(existing);
-        return res.status(status).json(body);
-
-
-    }
-    const originalJson = res.json;
-    res.json = function (body: any) {
-        redis.set(cacheKey, JSON.stringify({ status: res.statusCode, body }), "EX", 86400);
-        return originalJson.call(res, body);
-    } as any;
-    next();
-
+    // Step 1: Pehle Atomic Lock acquire karne ki koshish karein
     const isAcquired = await redis.set(
         cacheKey,
         JSON.stringify({ status: "PROCESSING" }),
         "EX",
-        3600,
+        60,
         "NX"
     );
+
     if (!isAcquired) {
         const existing = await redis.get(cacheKey);
         if (existing) {
             const { status, body } = JSON.parse(existing);
-
             if (status === "PROCESSING") {
                 return res.status(409).json({
                     success: false,
@@ -46,24 +32,23 @@ export const idempotencyMiddleware = async (req: Request, res: Response, next: N
             }
             return res.status(status).json(body);
         }
-        const originalJson = res.json;
-        res.json = function (body: any) {
-            if (res.statusCode >= 500) {
-                redis.del(cacheKey);
-            } else {
-                redis.set(cacheKey, JSON.stringify({ status: res.statusCode, body }), "EX", 86400);
-            }
-            return originalJson.call(res, body);
-        } as any;
+        return res.status(409).json({
+            success: false,
+            error: "Duplicate request in progress"
+        });
     }
 
+    // Step 2: Response cache interceptor
+    const originalJson = res.json;
+    res.json = function (body: any) {
+        if (res.statusCode >= 500) {
+            redis.del(cacheKey);
+        } else {
+            redis.set(cacheKey, JSON.stringify({ status: res.statusCode, body }), "EX", 86400);
+        }
+        return originalJson.call(res, body);
+    } as any;
 
-
-
-
-}
-
-
-
-
-
+    // Step 3: Abb controller execute karein
+    next();
+};

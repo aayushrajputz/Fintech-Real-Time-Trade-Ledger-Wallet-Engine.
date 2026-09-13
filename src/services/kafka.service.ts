@@ -26,4 +26,4 @@ export const sendOrderEvent = async (topic: string, eventData: any) => {
     } catch (err) {
         logger.error(`Failed to publish order event to kafka : `, err);
     }
-} 
+}

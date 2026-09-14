@@ -9,6 +9,8 @@ generated
 dist/
 build/
 *.tsbuildinfo
+Ai.implemention.md
+
 
 # Generated Files
 

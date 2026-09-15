@@ -78,8 +78,16 @@ export const transfer = async (senderUserId: string, reciverUserId: string, amou
     if (Number(senderWallet.balance) < amount) {
         throw new BadRequestError("Insufficient wallet balance to Transfer ")
     }
-    return walletRepo.transferFunds(senderWallet.id, reciverWallet.id, amount)
+
+    const result = await walletRepo.transferFunds(senderWallet.id, reciverWallet.id, amount);
+
+    // Sync BOTH wallets to Redis after successful DB transfer!
+    await syncWalletToRedis(senderUserId);
+    await syncWalletToRedis(reciverUserId);
+
+    return result;
 }
+
 
 export const ledgerHistory = async (userId: string, limit: number, cursor?: string) => {
     const wallet = await walletRepo.findByUserId(userId);

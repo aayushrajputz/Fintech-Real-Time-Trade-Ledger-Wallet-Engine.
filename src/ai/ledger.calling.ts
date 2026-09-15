@@ -41,7 +41,7 @@ export const ledgerTools: OpenAI.ChatCompletionTool[] = [
             type: "string",
             description: "Sender's User UUID",
           },
-          reciverUserId: {
+          receiverUserId: {
             type: "string",
             description: "Receiver's User UUID",
           },
@@ -50,7 +50,7 @@ export const ledgerTools: OpenAI.ChatCompletionTool[] = [
             description: "Positive numerical amount to transfer",
           },
         },
-        required: ["senderUserId", "reciverUserId", "amount"],
+        required: ["senderUserId", "receiverUserId", "amount"],
         additionalProperties: false,
       },
     },
@@ -77,4 +77,73 @@ export const ledgerTools: OpenAI.ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "search_user",
+      description: "Searches for a user by name or email to retrieve their User ID UUID.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Name or email of the user to search (e.g. 'Alice', 'Bob', 'alice@example.com')",
+          },
+        },
+        required: ["query"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "place_trading_order",
+      description: "Places a trade order (BUY/SELL) on the high-speed exchange orderbook via Kafka matching pipeline.",
+      parameters: {
+        type: "object",
+        properties: {
+          symbol: {
+            type: "string",
+            description: "Trading pair, e.g. 'BTC/INR', 'ETH/INR'",
+          },
+          side: {
+            type: "string",
+            enum: ["BUY", "SELL"],
+            description: "Order side (BUY or SELL)",
+          },
+          price: {
+            type: "number",
+            description: "Price per unit in INR",
+          },
+          quantity: {
+            type: "number",
+            description: "Quantity of the asset to trade",
+          },
+        },
+        required: ["symbol", "side", "price", "quantity"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_market_ticker",
+      description: "Fetches live real-time global market price in INR and USD for any cryptocurrency symbol (e.g. BTC, ETH, SOL, DOGE, XRP, ADA).",
+      parameters: {
+        type: "object",
+        properties: {
+          symbol: {
+            type: "string",
+            description: "Crypto asset symbol, e.g. 'BTC', 'ETH', 'SOL', 'DOGE', 'BTC/INR'",
+          },
+        },
+        required: ["symbol"],
+        additionalProperties: false,
+      },
+    },
+  },
+
+
 ];

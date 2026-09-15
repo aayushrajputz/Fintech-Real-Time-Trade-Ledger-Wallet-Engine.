@@ -8,7 +8,7 @@
 [![Prisma ORM](https://img.shields.io/badge/Prisma-ORM-teal?style=flat-square&logo=prisma)](https://www.prisma.io/)
 [![OpenAI / Gemini](https://img.shields.io/badge/AI-OpenAI%20%2F%20Function%20Calling-orange?style=flat-square&logo=openai)](https://openai.com/)
 
-> **A high-scale, double-entry financial ledger and matching engine capable of processing 4,200+ RPS with ACID compliance, integrated with a contextual Agentic AI Copilot for autonomous real-time treasury management, live crypto pricing, and trade execution.**
+> **A high-scale, double-entry financial ledger and matching engine capable of processing 4,200+ RPS with ACID compliance, integrated with a contextual Agentic AI Copilot for autonomous real-time treasury management, account statements, peer-to-peer transfers, live crypto pricing, and trade execution.**
 
 ---
 
@@ -16,7 +16,7 @@
 
                          ┌────────────────────────────────────────────────────────┐
                          │               Natural Language Prompt                  │
-                         │ ("Send ₹500 to Bob and buy 0.05 BTC if balance allows")│
+                         │ ("Send ₹500 to Bob, show last 3 txns, check BTC rate") │
                          └──────────────────────────┬─────────────────────────────┘
                                                     ▼
                                    ┌────────────────────────────────┐
@@ -26,40 +26,59 @@
                                             │              │
                ┌────────────────────────────┘              └──────────────────────────┐
                ▼                                                                      ▼
-┌────────────────────────────────┐ ┌────────────────────────────────┐
-│  Global Market Ticker Tool     │ │  FinFlow Core Execution Engine │
-│ (Binance / CoinGecko Realtime) │ │ (Auth, Balances, Orders, P2P)  │
-└────────────────────────────────┘ └──────────────┬─────────────────┘
-                                               │
-               ┌────────────────────────────────────────┴───────────────────┐
-               ▼                                                              ▼
-┌───────────────────────────────┐             ┌───────────────────────────────┐
-│  Fast Path: In-Memory         │             │  Durability: Double-Entry DB    │
-│  - Redis Distributed Locks    │             │  - PostgreSQL (ACID isolation)│
-│  - Atomic Balance Cache       │             │  - Prisma ORM + Optimistic Tx │
-│  - Event Stream (Kafka/BullMQ)│             │  - Immutable Audit Ledger Log │
-└───────────────────────────────┘             └───────────────────────────────┘
+    ┌────────────────────────────────┐ ┌────────────────────────────────┐ │ Global Market Ticker Tool │ │ FinFlow Core Execution Engine │ │ (Binance / CoinGecko Realtime) │ │ (Auth, Balances, Orders, P2P) │ └────────────────────────────────┘ └──────────────┬─────────────────┘ │ ┌────────────────────────────────────────┴───────────────────┐ ▼ ▼ ┌───────────────────────────────┐ ┌───────────────────────────────┐ │ Fast Path: In-Memory │ │ Durability: Double-Entry DB │ │ - Redis Distributed Locks │ │ - PostgreSQL (ACID isolation)│ │ - Atomic Balance Cache │ │ - Prisma ORM + Optimistic Tx │ │ - Event Stream (Kafka/BullMQ)│ │ - Immutable Audit Ledger Log │ └───────────────────────────────┘ └───────────────────────────────┘
 
+    
+---
+
+##  AI Financial Tools & Capability Matrix
+
+The Agentic Copilot dynamically plans, chains, and executes the following 6 core deterministic tools to satisfy complex, multi-step natural language commands:
+
+| Tool Name | Operation | Description | Backend Engine / Invariant |
+|---|---|---|---|
+| `get_wallet_balance` | **Instant Balance Lookup** | Fetches available funds and locked collateral in real-time. | Served sub-millisecond via **Redis Hash Cache** with PostgreSQL fallback. |
+| `search_user` | **Smart User Discovery** | Resolves names/emails (e.g. *"Bob"*, *"alice@gmail.com"*) to immutable UUIDs. | Fuzzy & indexed lookups in PostgreSQL to safely locate recipient IDs. |
+| `transfer_funds` | **P2P Instant Settlement** | Atomically moves funds between sender and receiver wallets. | **Double-entry bookkeeping** with Redis balance sync and debit/credit ledger records. |
+| `get_transaction_history` | **Account Statement & Audit** | Fetches recent ledger transactions, statements, and audit logs. | Cursor/Limit paginated query across immutable ledger entries. |
+| `get_market_ticker` | **Real-Time Live Pricing** | Fetches real-time market prices in **INR & USD** for any crypto asset (BTC, ETH, SOL, etc.). | Integrated with public **Binance / CoinGecko APIs** with instant USD-to-INR conversion. |
+| `place_trading_order` | **Order Matching & Execution** | Places BUY/SELL Limit or Market orders into the orderbook. | Ingested via **Apache Kafka** into the high-speed matching engine microservice. |
 
 ---
 
-## 🌟 Key Highlights & Capabilities
+## 💡 Real-World Natural Language Capabilities
 
-### 1. 🤖 Autonomous Agentic Financial Co-Pilot
-* **Context-Aware ReAct Execution:** Multi-turn autonomous tool execution loop with dynamic session and user authentication.
-* **Deterministic Tool Invocation:**
-  * `get_wallet_balance`: Instant balance lookups leveraging Redis cache with transactional DB fallback.
-  * `search_user`: Fuzzy and email-based recipient resolution.
-  * `transfer_funds`: Atomic ledger fund transfers with strict validation.
-  * `get_market_ticker`: Real-time crypto price engine (USD & INR conversion via live public feeds).
-  * `place_trading_order`: Limit/Market order orchestration directly into the matching queue.
-* **Hardened Security Invariants:** Sender identities are enforced at runtime via active sessions—preventing argument spoofing and prompt injection attacks.
+The AI Copilot is capable of multi-step reasoning and autonomous tool chaining across diverse financial workflows:
 
-### 2. ⚡ High-Throughput Distributed Core
-* **4,200+ RPS Benchmarked:** Engineered for high-throughput, low-latency financial settlement.
-* **Distributed Locking & Concurrency Control:** Redis-backed Redlock / Distributed Locks preventing double-spending and race conditions.
+### 1. 💸 Multi-Step Peer-to-Peer Transfers
+> **User:** *"Bob ko ₹2,500 bhej de aur transfer ke baad mera remaining balance bata."*
+* **Step 1:** Executes `search_user(query: "Bob")` ➡️ finds Bob's UUID.
+* **Step 2:** Executes `transfer_funds(amount: 2500, receiverUserId: "...")` ➡️ executes atomic ledger transfer.
+* **Step 3:** Executes `get_wallet_balance()` ➡️ confirms new updated balance.
+
+### 2. 📊 Account Statement & Audit Inquiries
+> **User:** *"Mera last 3 transaction history dikha aur total kitna debit hua hai bata."*
+* **Step 1:** Executes `get_transaction_history(limit: 3)`.
+* **Step 2:** Analyzes debit/credit entries and summarizes the statement with exact timestamps and transaction IDs.
+
+### 3. 📈 Live Market Intelligence & Trading
+> **User:** *"Solana ka live rate kya chal raha hai INR me? Agar rate 15,000 se kam hai toh 2 SOL buy kar le."*
+* **Step 1:** Executes `get_market_ticker(symbol: "SOL")` ➡️ gets live price in INR.
+* **Step 2:** Evaluates conditional reasoning (Price < ₹15,000).
+* **Step 3:** Executes `place_trading_order(symbol: "SOL/INR", side: "BUY", price: ..., quantity: 2)` ➡️ dispatches to Kafka matching pipeline.
+
+### 4. 🛡️ Complex Multi-Goal Workflows
+> **User:** *"Check kar mere paas kitne paise hain. Bob ko ₹5,000 bhej, bache hue paiso se jitna BTC aa sake uska BUY order laga de."*
+* Autonomously chains **Balance Lookup ➡️ Recipient Search ➡️ P2P Transfer ➡️ Ticker Fetch ➡️ Budget Calculation ➡️ Trade Placement**.
+
+---
+
+## ⚡ High-Throughput Distributed Core
+
+* **4,200+ RPS Benchmarked:** Engineered for ultra-high-throughput, low-latency financial settlements.
+* **Distributed Locking & Concurrency Control:** Redis-backed Redlock & Lua scripts preventing race conditions and double-spending.
 * **Strict Double-Entry Ledger:** Zero-sum accounting invariants ensure debit-credit balances remain mathematically balanced at all times.
-* **Dual-Layer Caching & Persistence:** Sub-millisecond reads powered by Redis with write-through / event-driven synchronization to PostgreSQL.
+* **Session Security Layer:** Invariant guards strictly enforce the authenticated user context (`senderUserId`), preventing AI prompt injection or unauthorized account debits.
 
 ---
 
@@ -70,9 +89,9 @@
 | **Runtime & Language** | Node.js (v20+), TypeScript, Modern ESM |
 | **Databases & Cache** | PostgreSQL 16, Redis (Key-Value, Hashes, Pub/Sub) |
 | **ORM & Data Layer** | Prisma ORM with `@prisma/adapter-pg` pool |
-| **Async Messaging** | Apache Kafka, BullMQ |
-| **AI & LLM Orchestration** | OpenAI Tool Protocol / Gemini SDK, Custom ReAct Dispatcher |
-| **Market Data Providers** | Binance & CoinGecko Public APIs |
+| **Async Messaging & Queues** | Apache Kafka, BullMQ |
+| **AI & Tool Orchestration** | OpenAI Tool Protocol / Gemini SDK, Custom ReAct Dispatcher |
+| **Market Feeds** | Binance & CoinGecko Public APIs |
 
 ---
 
@@ -80,10 +99,9 @@
 
 ### 1. Prerequisites
 * Node.js v20+
-* Docker & Docker Compose (for PostgreSQL and Redis)
+* Docker & Docker Compose (PostgreSQL, Redis, Kafka)
 
-### 2. Setup Environment
-Clone the repository and install dependencies:
+### 2. Environment Setup
 ```bash
 git clone https://github.com/<your-username>/advanced-backend.git
 cd advanced-backend
@@ -93,35 +111,14 @@ PORT=3000
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/finflow_db?schema=public"
 REDIS_URL="redis://localhost:6379"
 
-# AI Configuration
-OPENAI_API_KEY="your-openai-or-gemini-key"
-OPENAI_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/" # Optional for Gemini
+# AI Configuration (OpenAI or Gemini)
+OPENAI_API_KEY="your-api-key"
+OPENAI_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/" # If using Gemini
 
 # Run database migrations
 npx prisma migrate dev
 
-# Seed test users and initial balances
+# Seed test users (Alice & Bob) with initial balances
 npx tsx src/scripts/seed.ai.test.ts
 
 npx tsx src/ai/chat.ts
-
-
-=================================================
-🤖 WELCOME TO FINFLOW AI FINANCIAL ASSISTANT
-=================================================
-🔑 Enter your account email to authenticate: alice@example.com
-✅ Authenticated as: Alice Sharma (ef12f33e-8df8-40e8-98ba-3398ee27df4d)
-
-👤 You > check my current balance and find out the live price of Bitcoin in INR
-⚙️ Agent Thinking] Executing get_wallet_balance...
-⚙️ Agent Thinking] Executing get_market_ticker(symbol: "BTC")...
-🤖 AI > Your available balance is ₹50,000.00.
-Bitcoin (BTC) is currently trading at ₹7,345,210.50 INR ($88,120.00 USD).
-
-👤 You > send ₹5,000 to bob and place a buy order for 0.0005 BTC at market rate
-⚙️ Agent Thinking] Executing search_user(query: "bob")...
-⚙️ Agent Thinking] Executing transfer_funds(amount: 5000, recipient: "b50a8841-...")
-⚙️ Agent Thinking] Executing place_trading_order(symbol: "BTC", side: "BUY", quantity: 0.0005)...
-🤖 AI > Transferred ₹5,000 to Bob successfully.
-Order placed: BUY 0.0005 BTC at Market Price (Order ID: ord_8f93a12). Remaining Balance: ₹41,327.40.
-

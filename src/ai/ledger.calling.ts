@@ -55,4 +55,26 @@ export const ledgerTools: OpenAI.ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "get_transaction_history",
+      description: "Fetches the recent ledger transaction history / statement for a specific user.",
+      parameters: {
+        type: "object",
+        properties: {
+          userId: {
+            type: "string",
+            description: "User UUID whose transaction history is requested",
+          },
+          limit: {
+            type: "number",
+            description: "Number of past transactions to fetch (e.g. 5, 10)",
+          },
+        },
+        required: ["userId"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];

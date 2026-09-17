@@ -3,6 +3,7 @@ import { redis } from "../config/redis.js";
 import * as walletRepo from "../repositories/wallet.repository.js";
 import * as walletService from "../services/wallet.service.js";
 import * as orderService from "../services/order.service.js"
+import { ToolValidationSchema } from "./schema/ledger.schema.js";
 
 
 
@@ -194,8 +195,6 @@ export async function executeGetMarketTicker(args: { symbol: string }) {
             };
         }
 
-        // 3. Real-Time Fetch from Global Public Exchange API (Binance USDT -> INR conversion)
-        // 1 USD ~ 86.5 INR benchmark
         const USD_TO_INR = 86.5;
         const binancePair = `${rawSymbol}USDT`;
 

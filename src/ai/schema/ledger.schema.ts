@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { resolveTradingPair } from "../utils/symbol.resolver.js";
 
 export const UserUUIDSchema = z.object({
     userId: z.string().uuid().min(36, "invalid uuid"),
@@ -14,12 +15,21 @@ export const TransferFundSchema = z.object({
 })
 
 export const PlaceTradingOrderSchema = z.object({
-    symbol: z.string().regex(/^[A-Z0-9]{2,10}(\/(INR|USDT))?$/i, "Invalid pair format"),
+    symbol: z.string().transform((val, ctx) => {
+        const resolved = resolveTradingPair(val);
+        if (!resolved.valid || !resolved.symbol) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: resolved.error || "Invalid trading pair",
+            });
+            return z.NEVER;
+        }
+        return resolved.symbol;
+    }),
     side: z.enum(["BUY", "SELL"]),
-    price: z.number().positive(),
-    quantity: z.number().positive(),
-
-})
+    price: z.number().positive({ message: "Price must be strictly > 0" }),
+    quantity: z.number().positive({ message: "Quantity must be strictly > 0" }),
+});
 
 export const SearchUserSchema = z.object({
     query: z.string().min(2, "search")
@@ -31,8 +41,19 @@ export const GetTransactionHistorySchema = z.object({
 })
 
 export const GetMarketTickerSchema = z.object({
-    symbol: z.string().min(2, "Symbol must be at least 2 chars")
+    symbol: z.string().transform((val, ctx) => {
+        const resolved = resolveTradingPair(val);
+        if (!resolved.valid || !resolved.baseAsset) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: resolved.error || "Invalid coin symbol",
+            });
+            return z.NEVER;
+        }
+        return resolved.baseAsset;
+    }),
 });
+
 export const GetWalletBalanceSchema = z.object({
     userId: z.string().uuid().optional(),
 });
@@ -72,3 +93,13 @@ export function validateToolArgs(toolName: string, rawArgs: string) {
     }
     return { success: true, data: result.data };
 }
+
+
+
+
+export type TransferFundDTO = z.infer<typeof TransferFundSchema>;
+export type PlaceTradingOrderDTO = z.infer<typeof PlaceTradingOrderSchema>;
+export type SearchUserDTO = z.infer<typeof SearchUserSchema>;
+export type GetTransactionHistoryDTO = z.infer<typeof GetTransactionHistorySchema>;
+export type GetMarketTickerDTO = z.infer<typeof GetMarketTickerSchema>;
+export type GetWalletBalanceDTO = z.infer<typeof GetWalletBalanceSchema>;

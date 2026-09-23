@@ -10,6 +10,7 @@ import {
     executePlaceTradingOrder,
     executeGetMarketTicker
 } from "./ledger.handlers.js";
+import { trackUsage, formatCost } from "./utils/cost.tracker.js";
 
 export async function dispatchToolCall(toolName: string, rawArgs: string) {
 
@@ -98,6 +99,15 @@ export async function runAgent(userPrompt: string) {
             tools: ledgerTools,
             tool_choice: "auto",
         });
+        if (response.usage && currentAuthUser) {
+            const metrics = await trackUsage(
+                currentAuthUser.id,
+                "openai/gpt-oss-120b",
+                response.usage.prompt_tokens,
+                response.usage.completion_tokens
+            );
+            console.log(` [Session Cost]: ${formatCost(metrics.totalCostUSD)} | Total Tokens: ${metrics.totalTokens} | API Calls: ${metrics.apiCallsCount}`);
+        }
 
         const responseMessage = response.choices[0].message;
         conversationHistory.push(responseMessage);

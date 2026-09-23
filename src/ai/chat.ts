@@ -9,7 +9,7 @@ const rl = readline.createInterface({
 
 console.clear();
 console.log("=================================================");
-console.log("🔐 FINTECH AI GATEWAY - DYNAMIC AUTH LOGIN");
+console.log(" FINTECH AI GATEWAY - DYNAMIC AUTH LOGIN");
 console.log("=================================================\n");
 
 async function startLogin() {
@@ -17,7 +17,7 @@ async function startLogin() {
         const email = emailInput.trim();
 
         if (!email) {
-            console.log("❌ Email cannot be empty.");
+            console.log(" Email cannot be empty.");
             return startLogin();
         }
 
@@ -29,28 +29,22 @@ async function startLogin() {
             });
 
             if (!user) {
-                console.log(`❌ No account found with email: ${email}`);
-                console.log("💡 Tip: Use 'alice@example.com' or 'bob@example.com'\n");
+                console.log(` No account found with email: ${email}`);
+                console.log(" Tip: Use 'alice@example.com' or 'bob@example.com'\n");
                 return startLogin();
             }
 
             // 2. Set dynamic session in AI Agent
             setAuthUser(user);
 
-            console.log(`\n✅ Logged in successfully as: ${user.name} (${user.id})`);
-            console.log("=================================================");
-            console.log("💬 You can now chat naturally with the AI!");
-            console.log("💡 Examples:");
-            console.log("   - 'What is my current balance?'");
-            console.log("   - 'Transfer 2000 INR to Bob'");
-            console.log("   - 'Show my recent transactions'");
-            console.log("   - 'Buy 0.5 BTC at 85000 INR'");
-            console.log("=================================================\n");
+            console.log(`\n Logged in successfully as: ${user.name} (${user.id})`);
+            console.log(" You can now chat naturally with the AI!");
+            console.log(" Ask anything related to your Account and real trading market prices data ");
 
             // 3. Start Chat loop
             promptChat();
         } catch (err: any) {
-            console.error("❌ Login Error:", err.message);
+            console.error(" Login Error:", err.message);
             startLogin();
         }
     });

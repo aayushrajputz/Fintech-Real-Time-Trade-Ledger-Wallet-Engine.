@@ -11,6 +11,9 @@ import {
     executeGetMarketTicker
 } from "./ledger.handlers.js";
 import { trackUsage, formatCost } from "./utils/cost.tracker.js";
+import { routeModel } from "./utils/model.router.js";
+import { pruneConversationHistory } from "./utils/token.manager.js";
+
 
 export async function dispatchToolCall(toolName: string, rawArgs: string) {
 
@@ -89,12 +92,14 @@ export async function runAgent(userPrompt: string) {
         content: userPrompt,
     });
 
+    conversationHistory = pruneConversationHistory(conversationHistory, 4000);
+    const selectedModel = routeModel(userPrompt, conversationHistory.length);
 
 
     const MAX_STEPS = 8;
     for (let step = 0; step < MAX_STEPS; step++) {
         const response = await openai.chat.completions.create({
-            model: "openai/gpt-oss-120b",
+            model: selectedModel,
             messages: conversationHistory,
             tools: ledgerTools,
             tool_choice: "auto",
@@ -102,7 +107,7 @@ export async function runAgent(userPrompt: string) {
         if (response.usage && currentAuthUser) {
             const metrics = await trackUsage(
                 currentAuthUser.id,
-                "openai/gpt-oss-120b",
+                selectedModel,
                 response.usage.prompt_tokens,
                 response.usage.completion_tokens
             );

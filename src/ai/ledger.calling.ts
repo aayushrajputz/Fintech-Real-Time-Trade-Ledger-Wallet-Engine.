@@ -16,15 +16,13 @@ export const ledgerTools: OpenAI.ChatCompletionTool[] = [
     function: {
       name: "get_wallet_balance",
       description: "Fetches the current authenticated session user's wallet balance and locked amount. Cannot and must not be used to view other users' balances.",
-      strict: true,
       parameters: {
         type: "object",
         properties: {},
-        required: [],
-        additionalProperties: false,
       },
     },
   },
+
   {
     type: "function",
     function: {

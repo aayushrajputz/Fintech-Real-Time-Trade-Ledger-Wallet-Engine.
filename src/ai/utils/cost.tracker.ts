@@ -6,7 +6,7 @@ export interface ModelPrice {
 }
 
 export const MODEL_PRICING: Record<string, ModelPrice> = {
-    "openai/gpt-4o-mini": { input: 0.15, output: 0.60 },
+    "openai/gpt-oss-20b": { input: 0.50, output: 1.50 },
     "openai/gpt-oss-120b": { input: 2.00, output: 8.00 },
     "default": { input: 0.50, output: 2.00 }
 }

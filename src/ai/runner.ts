@@ -13,6 +13,9 @@ import {
 import { trackUsage, formatCost } from "./utils/cost.tracker.js";
 import { routeModel } from "./utils/model.router.js";
 import { pruneConversationHistory } from "./utils/token.manager.js";
+import { checkAiRateLimit } from "./utils/rateLimiter.js";
+import { IdempotencyCheck } from "./utils/idempotency.js";
+import { error } from "node:console";
 
 
 export async function dispatchToolCall(toolName: string, rawArgs: string) {
@@ -37,13 +40,31 @@ export async function dispatchToolCall(toolName: string, rawArgs: string) {
     switch (toolName) {
         case "get_wallet_balance":
             return await executeGetWalletBalance({ userId: sessionUserId });
-
         case "transfer_funds":
-            return await executeTransferFunds({
-                senderUserId: currentAuthUser!.id,
-                receiverUserId: args.receiverUserId,
-                amount: args.amount,
-            });
+
+            const idempotencyKey = `tx:${currentAuthUser.id}:${args.receiverUserId}:${args.amount}`;
+            const lock = await IdempotencyCheck.checkAndLock(idempotencyKey)
+            if (lock.isDuplicate) {
+                if (lock.status === "COMPLETED") {
+                    return { cached: true, ...lock.cachedResult }
+                }
+                return { error: "Transaction already in progress" }
+            }
+            try {
+                const result = await executeTransferFunds({
+                    senderUserId: currentAuthUser.id,
+                    receiverUserId: args.receiverUserId,
+                    amount: args.amount,
+                });
+                // Save successful result
+                await IdempotencyCheck.saveResults(idempotencyKey, result);
+                return result;
+            } catch (err: any) {
+                // Error aaya toh lock release karo taaki user retry kar sake
+                await IdempotencyCheck.releaseLock(idempotencyKey);
+                return { error: err.message };
+            }
+
 
         case "get_transaction_history":
             return await executeGetTransactionHistory({
@@ -80,10 +101,15 @@ export let conversationHistory: OpenAI.ChatCompletionMessageParam[] = [
 ];
 
 export async function runAgent(userPrompt: string) {
-    // Guardrail 1: Check malicious prompt injection
+    if (!currentAuthUser) {
+        return "Authentication required"
+    }
+    const rateLimiter = await checkAiRateLimit(currentAuthUser.id, 10, 60);
+    if (!rateLimiter.allowed) {
+        return `Rate limit exceeded. Please try again after ${rateLimiter.retryAfterSeconds} seconds`
+    }
     const promptCheck = sanitizeUserPrompt(userPrompt);
     if (!promptCheck.safe) {
-        console.log(`\n [Guardrail Blocked]: ${promptCheck.reason}`);
         return promptCheck.reason;
     }
 

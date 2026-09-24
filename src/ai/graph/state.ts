@@ -14,7 +14,7 @@ export const AgentStateAnnotation = Annotation.Root({
     }),
 
     stepCount: Annotation<number>({
-        reducer: (current, increment) => current + (increment ?? 1),
+        reducer: (current, next) => current + (next ?? 1),
         default: () => 0
     })
 })

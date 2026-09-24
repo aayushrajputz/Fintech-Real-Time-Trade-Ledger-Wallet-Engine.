@@ -1,17 +1,46 @@
 import { ChatOpenAI } from "@langchain/openai"
 import { AgentState } from "./state.js"
 import { ledgerTools } from "../ledger.calling.js";
-import { dispatchToolCall } from "../runner.js";
+import { dispatchToolCall, currentAuthUser } from "../runner.js";
 import { ToolMessage } from "@langchain/core/messages";
-
-export const model = new ChatOpenAI({
-    modelName: "openai/gpt-oss-120b",
-    temperature: 0,
-}).bindTools(ledgerTools);
+import { pruneConversationHistory } from "../utils/token.manager.js";
+import { trackUsage, formatCost } from "../utils/cost.tracker.js";
+import { routeModel } from "../utils/model.router.js"
 
 export async function callModelNode(state: AgentState) {
-    const response = await model.invoke(state.messages)
-    return { messages: [response], stepCount: 1 }
+    // 1. DYNAMIC MODEL ROUTING
+    const latestUserMsg = state.messages
+        .filter((m) => m._getType() === "human" || (m as any).role === "user")
+        .pop()?.content?.toString() || "";
+    const selectedModelName = routeModel(latestUserMsg, state.messages.length);
+
+    // 2. CONTEXT PRUNING
+    const prunedMessages = pruneConversationHistory(state.messages as any, 4000);
+
+    // 3. DYNAMIC MODEL INSTANTIATION
+    const model = new ChatOpenAI({
+        modelName: selectedModelName,
+        temperature: 0,
+    }).bindTools(ledgerTools);
+
+    // 4. INVOKE LLM
+    const response = await model.invoke(prunedMessages as any);
+
+    // 5. COST & TOKEN TRACKING
+    if (response.usage_metadata && currentAuthUser) {
+        const metrics = await trackUsage(
+            currentAuthUser.id,
+            selectedModelName,
+            response.usage_metadata.input_tokens,
+            response.usage_metadata.output_tokens
+        );
+        console.log(`[Session Cost]: ${formatCost(metrics.totalCostUSD)} | Total Tokens: ${metrics.totalTokens} | Model: ${selectedModelName}`);
+    }
+
+    return {
+        messages: [response],
+        stepCount: 1
+    };
 }
 
 export async function callToolNode(state: AgentState) {

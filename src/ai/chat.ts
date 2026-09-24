@@ -55,7 +55,7 @@ function promptChat() {
         const cleanInput = input.trim();
 
         if (cleanInput.toLowerCase() === "exit" || cleanInput.toLowerCase() === "quit") {
-            console.log("\n👋 Exiting AI Session. See you soon!");
+            console.log("\n Exiting AI Session. See you soon!");
             rl.close();
             process.exit(0);
         }
@@ -66,9 +66,11 @@ function promptChat() {
         }
 
         try {
-            await runAgent(cleanInput);
+            const answer = await runAgent(cleanInput);
+            console.log(` AI:${answer}`);
+
         } catch (err: any) {
-            console.error("\n❌ Error:", err.message);
+            console.error("\n Error:", err.message);
         }
 
         console.log("\n-------------------------------------------------");

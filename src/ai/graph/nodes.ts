@@ -5,7 +5,7 @@ import { dispatchToolCall } from "../runner.js";
 import { ToolMessage } from "@langchain/core/messages";
 
 export const model = new ChatOpenAI({
-    modelName: "gpt-oss-120b",
+    modelName: "openai/gpt-oss-120b",
     temperature: 0,
 }).bindTools(ledgerTools);
 

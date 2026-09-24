@@ -15,7 +15,6 @@ import { routeModel } from "./utils/model.router.js";
 import { pruneConversationHistory } from "./utils/token.manager.js";
 import { checkAiRateLimit } from "./utils/rateLimiter.js";
 import { IdempotencyCheck } from "./utils/idempotency.js";
-import { error } from "node:console";
 
 
 export async function dispatchToolCall(toolName: string, rawArgs: string) {

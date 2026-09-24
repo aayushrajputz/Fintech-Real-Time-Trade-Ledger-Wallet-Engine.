@@ -14,10 +14,10 @@ export async function callModelNode(state: AgentState) {
         .pop()?.content?.toString() || "";
     const selectedModelName = routeModel(latestUserMsg, state.messages.length);
 
-    // 2. CONTEXT PRUNING
+
     const prunedMessages = pruneConversationHistory(state.messages as any, 4000);
 
-    // 3. DYNAMIC MODEL INSTANTIATION
+
     const model = new ChatOpenAI({
         modelName: selectedModelName,
         temperature: 0,

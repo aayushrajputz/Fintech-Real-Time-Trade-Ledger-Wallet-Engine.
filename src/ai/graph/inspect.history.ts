@@ -11,13 +11,9 @@ async function main() {
     };
     setAuthUser(aliceUser);
 
-    console.log("--- ⚡ Running 2-Step Agent Conversation ---");
+    console.log("Running 2-Step Agent Conversation");
     await runGraphAgent("Check my wallet balance");
     await runGraphAgent("Search for user Bob");
-
-    console.log("\n==================================================");
-    console.log("🕰️ TIME-TRAVEL AUDIT TRAIL (Checkpoints Trajectory)");
-    console.log("==================================================\n");
 
     const config = {
         configurable: {
@@ -30,15 +26,15 @@ async function main() {
 
     let stepNum = 1;
     for await (const snapshot of history) {
-        console.log(`📌 [Snapshot #${stepNum}]`);
-        console.log(`  - Checkpoint ID: ${snapshot.config.configurable?.checkpoint_id}`);
-        console.log(`  - Next Node to execute: ${snapshot.next.length > 0 ? snapshot.next.join(", ") : "END"}`);
-        console.log(`  - Total Messages at this point: ${snapshot.values?.messages?.length || 0}`);
+        console.log(`Snapshot #${stepNum}`);
+        console.log(`Checkpoint ID: ${snapshot.config.configurable?.checkpoint_id}`);
+        console.log(`Next Node to execute: ${snapshot.next.length > 0 ? snapshot.next.join(", ") : "END"}`);
+        console.log(`Total Messages at this point: ${snapshot.values?.messages?.length || 0}`);
 
         const lastMsg = snapshot.values?.messages?.[snapshot.values.messages.length - 1];
         if (lastMsg) {
-            console.log(`  - Latest Message Type: ${lastMsg._getType?.() || (lastMsg as any).role}`);
-            console.log(`  - Message Snippet: ${String(lastMsg.content || "").slice(0, 60)}...`);
+            console.log(`Latest Message Type: ${lastMsg._getType?.() || (lastMsg as any).role}`);
+            console.log(`Message Snippet: ${String(lastMsg.content || "").slice(0, 60)}...`);
         }
         console.log("--------------------------------------------------");
         stepNum++;

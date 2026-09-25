@@ -3,7 +3,7 @@ import { redis } from "../config/redis.js";
 import * as walletRepo from "../repositories/wallet.repository.js";
 import * as walletService from "../services/wallet.service.js";
 import * as orderService from "../services/order.service.js"
-
+import { withExponentialBackOff } from "./utils/retry.js";
 
 
 
@@ -178,8 +178,10 @@ export async function executePlaceTradingOrder(args: {
 }
 
 
+
 export async function executeGetMarketTicker(args: { symbol: string }) {
     try {
+        const USD_TO_INR = 90.2;
         // 1. Clean Symbol format: e.g. "BTC/INR", "ETH", "sol" -> "BTC", "ETH", "SOL"
         const rawSymbol = args.symbol.toUpperCase().replace("/INR", "").replace("/USDT", "").trim();
         const redisKey = `ticker:${rawSymbol}INR`;
@@ -190,41 +192,93 @@ export async function executeGetMarketTicker(args: { symbol: string }) {
             return {
                 symbol: `${rawSymbol}/INR`,
                 lastPrice: parseFloat(cachedPrice),
+                priceUSD: Math.round((parseFloat(cachedPrice) / USD_TO_INR) * 100) / 100, // ✅ Calculated USD price!
                 currency: "INR",
                 source: "REDIS_LIVE_CACHE",
+
+
             };
         }
-
-        const USD_TO_INR = 86.5;
         const binancePair = `${rawSymbol}USDT`;
 
-        const response = await fetch(
-            `https://api.binance.com/api/v3/ticker/price?symbol=${binancePair}`
-        );
+        let priceInUsd = 0;
+        let source = "BINANCE_REALTIME";
 
-        if (response.ok) {
+        try {
+            const response = await withExponentialBackOff(async () => {
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${binancePair}`);
+                if (!res.ok) {
+                    throw new Error(`Binance HTTP error: ${res.status}`);
+                }
+                return res;
+            }, { maxRetries: 2, baseDelaysMs: 150 });
+
             const data: any = await response.json();
-            const priceInUsd = parseFloat(data.price);
-            const priceInInr = Math.round(priceInUsd * USD_TO_INR * 100) / 100;
+            priceInUsd = parseFloat(data.price);
 
-            // Cache in Redis for 10 seconds TTL
-            await redis.set(redisKey, priceInInr.toString(), "EX", 10);
+        } catch (binanceErr: any) {
+            console.warn(`Binance failed after retries. Switching to CoinGecko Fallback...`);
 
-            return {
-                symbol: `${rawSymbol}/INR`,
-                lastPrice: priceInInr,
-                priceInUSD: priceInUsd,
-                currency: "INR",
-                source: "BINANCE_REALTIME_MARKET",
-                timestamp: new Date().toISOString(),
+            source = "COINGECKO_FALLBACK";
+            const coinMap: Record<string, string> = {
+                BTC: "bitcoin",
+                ETH: "ethereum",
+                SOL: "solana",
+                BNB: "binancecoin",
+                XRP: "ripple",
+                DOGE: "dogecoin",
+                ADA: "cardano",
+                AVAX: "avalanche-2",
+                DOT: "polkadot",
+                MATIC: "matic-network",
+                POL: "polygon-ecosystem-token",
+                NEAR: "near",
+                SUI: "sui",
+                LINK: "chainlink",
+                SHIB: "shiba-inu",
+                PEPE: "pepe",
+                USDT: "tether",
+                USDC: "usd-coin",
             };
+
+            const coinId = coinMap[rawSymbol] || rawSymbol.toLowerCase();
+
+            try {
+                const cgResponse = await fetch(
+                    `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`
+                );
+                const cgData: any = await cgResponse.json();
+                priceInUsd = cgData[coinId]?.usd || 100;
+            } catch (cgErr) {
+                console.error("CoinGecko also failed. Using emergency fallback.");
+                source = "REDIS_CACHE";
+                const lkgPrice = await redis.get(`ticker:lkg:${rawSymbol}`);
+                if (!lkgPrice) {
+                    await redis.set(`ticker:lkg:${rawSymbol}`, '100', "EX", 60 * 60 * 24)
+                    priceInUsd = 100
+                    source = "REDIS_CACHE"
+                } else {
+                    priceInUsd = parseFloat(lkgPrice);
+                    source = "REDIS_LAST_KNOWN_PRICE"
+                }
+
+            }
         }
 
-        // Fallback if coin not found on Binance
+        // Calculate INR price from priceInUsd
+        const priceInInr = Math.round(priceInUsd * USD_TO_INR * 100) / 100;
+
+        // Cache in Redis for 10 seconds TTL
+        await redis.set(redisKey, priceInInr.toString(), "EX", 10);
+
         return {
-            symbol: args.symbol,
-            error: `Could not fetch live price for symbol '${args.symbol}'. Please check the ticker name (e.g. BTC, ETH, SOL, DOGE).`,
-        };
+            symbol: `${rawSymbol}/INR`,
+            priceUSD: priceInUsd,
+            lastPrice: priceInInr,
+            currency: "INR",
+            source: source,
+            timestamp: new Date().toISOString(),
+        }
     } catch (err: any) {
         return {
             error: `Live market fetch failed: ${err.message}`,

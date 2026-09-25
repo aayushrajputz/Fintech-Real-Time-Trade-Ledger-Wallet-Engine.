@@ -14,8 +14,22 @@ export function routeModel(userPrompt: string, historyLength: number): string {
         "slippage",
         "analyze",
         "audit",
-        "advis",
-        "strategy"
+        "advise",
+        "strategy",
+        "recommend",
+        "search",
+        "market",
+        "coin",
+        "graph",
+        "chart",
+        "trend",
+        "volatility",
+        "performance",
+        "compare",
+        "analyze",
+        "best",
+        "top",
+        "research",
     ]
     const lower = userPrompt.toLowerCase();
     const isComplex = complexKeywords.some((k) => lower.includes(k));

@@ -16,7 +16,12 @@ export const AgentStateAnnotation = Annotation.Root({
     stepCount: Annotation<number>({
         reducer: (current, next) => current + (next ?? 1),
         default: () => 0
+    }),
+    next: Annotation<string>({
+        reducer: (_, next) => next,
+        default: () => ""
     })
+
 })
 
 export type AgentState = typeof AgentStateAnnotation.State

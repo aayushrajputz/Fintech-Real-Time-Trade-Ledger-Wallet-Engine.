@@ -1,5 +1,5 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
-import { ledgerGraph } from "./graph.js"
+import { multiAgentGraph } from "./multi_agent/graph.js"
 import { currentAuthUser, getAgentSystemPrompt } from "../runner.js"
 
 
@@ -13,7 +13,7 @@ export async function runGraphAgent(userPrompt: string) {
     };
 
     // 1. Check if state already exists for this thread
-    const currentState = await ledgerGraph.getState(config);
+    const currentState = await multiAgentGraph.getState(config);
 
     const messagesSend = [];
 
@@ -26,7 +26,7 @@ export async function runGraphAgent(userPrompt: string) {
     messagesSend.push(new HumanMessage({ content: userPrompt }));
 
     // 2. Invoke graph with only delta
-    const finalStage = await ledgerGraph.invoke({
+    const finalStage = await multiAgentGraph.invoke({
         messages: messagesSend,
         senderUserId: currentAuthUser.id,
         stepCount: 0

@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	fmt.Println("⚡ Starting High-Speed Golang Order Matching Engine Microservice...")
+	fmt.Println("Starting Golang Order Matching Engine Microservice...")
 
 	// 1. Initialize Kafka Producer for matched trades
 	producer.InitProducer()

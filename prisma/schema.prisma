@@ -73,3 +73,19 @@ model LedgerEntry{
   balance Decimal @db.Decimal(20,4)
   createdAt DateTime @default(now())
 } 
+
+model DocumentKnowledge{
+  id  String @id @default(uuid())
+  title String 
+  content String @db.Text
+  category String // e.g  "COMPLIANCE_POLICY", "TRANSACTION_AUDIT", "USER_PREFERENCE",
+  userId String ?
+
+  // 1536-dimensional vector for OpenAI embeddings 
+
+  embedding Unsupported("vector(1536)")?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("document_knowledge")
+  
+}

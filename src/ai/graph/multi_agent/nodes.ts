@@ -17,7 +17,7 @@ export async function supervisorNode(state: AgentState) {
         - If the task is completed or is a conversational greeting/question, return next: 'FINISH' with a clear, professional 'finalAnswer'. `
     })
 
-    const messageWithSupervisorPrompt = [supervisorPrompt, ...state.messages];
+    const messageWithSupervisorPrompt = [supervisorPrompt, ...getPrunedMessages(state.messages)];
     const decision: SupervisorDesion = await supervisorModel.invoke(messageWithSupervisorPrompt)
     console.log(`Decided -> '${decision.next}' (Reason: ${decision.reasoning})`);
 
@@ -40,7 +40,7 @@ export async function supervisorNode(state: AgentState) {
 
 export async function treasuryWorkerNode(state: AgentState) {
     console.log("💼 [Treasury Worker]: Executing wallet & ledger intent...");
-    const response = await treasuryAgentModel.invoke(state.messages);
+    const response = await treasuryAgentModel.invoke(getPrunedMessages(state.messages))
     const newMessages: BaseMessage[] = [response];
     // Agar model ne tools maange hain, execute karo
     if (response.tool_calls && response.tool_calls.length > 0) {
@@ -64,7 +64,7 @@ export async function treasuryWorkerNode(state: AgentState) {
 }
 export async function tradingWorkerNode(state: AgentState) {
     console.log(" Trading Worker: Executing market & orderbook intent...");
-    const response = await tradingAgentModel.invoke(state.messages);
+    const response = await tradingAgentModel.invoke(getPrunedMessages(state.messages));
     const newMessages: BaseMessage[] = [response];
     // Agar trading tools maange hain, execute karo
     if (response.tool_calls && response.tool_calls.length > 0) {
@@ -85,4 +85,8 @@ export async function tradingWorkerNode(state: AgentState) {
         messages: newMessages,
         stepCount: 1,
     };
+}
+function getPrunedMessages(messages: BaseMessage[], maxCount = 10): BaseMessage[] {
+    if (messages.length <= maxCount) return messages;
+    return messages.slice(-maxCount);
 }

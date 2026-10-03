@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../errors/app-errors.js'; // local dev me .ts/.js imports follow structural config
+import { AppError } from '../errors/app-errors.js';
 import { ZodError } from 'zod';
 import { logger } from '../utils/logger.js';
 
@@ -9,7 +9,6 @@ export const globalErrorHandler = (
     res: Response,
     next: NextFunction
 ): any => {
-    // If it is our custom operational error
     if (err instanceof AppError) {
         return res.status(err.statusCode).json({
             success: false,

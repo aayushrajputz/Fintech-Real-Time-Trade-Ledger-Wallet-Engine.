@@ -12,20 +12,16 @@ export async function runGraphAgent(userPrompt: string) {
         }
     };
 
-    // 1. Check if state already exists for this thread
     const currentState = await multiAgentGraph.getState(config);
 
     const messagesSend = [];
 
-    // Agar thread bilkul naya hai (empty history), toh pehle SystemMessage inject karo
     if (!currentState.values || !currentState.values.messages || currentState.values.messages.length === 0) {
         messagesSend.push(new SystemMessage({ content: getAgentSystemPrompt(currentAuthUser) }));
     }
 
-    // Naya Human message append karo
     messagesSend.push(new HumanMessage({ content: userPrompt }));
 
-    // 2. Invoke graph with only delta
     const finalStage = await multiAgentGraph.invoke({
         messages: messagesSend,
         senderUserId: currentAuthUser.id,

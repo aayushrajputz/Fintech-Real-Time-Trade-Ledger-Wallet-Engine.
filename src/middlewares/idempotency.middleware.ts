@@ -8,10 +8,7 @@ export const idempotencyMiddleware = async (req: Request, res: Response, next: N
     if (!idempotencyKey) {
         return next(new BadRequestError("X-idempotency-key header is required"));
     }
-
     const cacheKey = `idempotency:${idempotencyKey}`;
-
-    // Step 1: Pehle Atomic Lock acquire karne ki koshish karein
     const isAcquired = await redis.set(
         cacheKey,
         JSON.stringify({ status: "PROCESSING" }),
@@ -19,7 +16,6 @@ export const idempotencyMiddleware = async (req: Request, res: Response, next: N
         60,
         "NX"
     );
-
     if (!isAcquired) {
         const existing = await redis.get(cacheKey);
         if (existing) {
@@ -37,8 +33,6 @@ export const idempotencyMiddleware = async (req: Request, res: Response, next: N
             error: "Duplicate request in progress"
         });
     }
-
-    // Step 2: Response cache interceptor
     const originalJson = res.json;
     res.json = function (body: any) {
         if (res.statusCode >= 500) {
@@ -48,7 +42,5 @@ export const idempotencyMiddleware = async (req: Request, res: Response, next: N
         }
         return originalJson.call(res, body);
     } as any;
-
-    // Step 3: Abb controller execute karein
     next();
 };

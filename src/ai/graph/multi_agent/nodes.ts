@@ -1,7 +1,7 @@
 import { AIMessage, BaseMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
 import { AgentState } from "../state.js";
 import { supervisorModel, treasuryAgentModel, tradingAgentModel, SupervisorDesion } from "./agents.js";
-import { dispatchToolCall, setAuthUser } from "../../runner.js";
+import { dispatchToolCall } from "../../runner.js";
 
 export async function supervisorNode(state: AgentState) {
     const supervisorPrompt = new SystemMessage({
@@ -39,13 +39,13 @@ export async function supervisorNode(state: AgentState) {
 }
 
 export async function treasuryWorkerNode(state: AgentState) {
-    console.log("💼 [Treasury Worker]: Executing wallet & ledger intent...");
+    console.log(" [Treasury Worker]: Executing wallet & ledger intent...");
     const response = await treasuryAgentModel.invoke(getPrunedMessages(state.messages))
     const newMessages: BaseMessage[] = [response];
     // Agar model ne tools maange hain, execute karo
     if (response.tool_calls && response.tool_calls.length > 0) {
         for (const tc of response.tool_calls) {
-            console.log(`⚡ [Treasury Tool]: Executing ${tc.name}`);
+            console.log(` [Treasury Tool]: Executing ${tc.name}`);
             const rawArgs = JSON.stringify(tc.args);
             const result = await dispatchToolCall(tc.name, rawArgs);
             newMessages.push(
@@ -66,7 +66,6 @@ export async function tradingWorkerNode(state: AgentState) {
     console.log(" Trading Worker: Executing market & orderbook intent...");
     const response = await tradingAgentModel.invoke(getPrunedMessages(state.messages));
     const newMessages: BaseMessage[] = [response];
-    // Agar trading tools maange hain, execute karo
     if (response.tool_calls && response.tool_calls.length > 0) {
         for (const tc of response.tool_calls) {
             console.log(` Trading Tool: Executing ${tc.name}`);

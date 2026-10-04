@@ -3,11 +3,13 @@ import { check, sleep } from 'k6';
 
 export const options = {
     stages: [
-        { duration: '10s', target: 200 },  // Ramp up to 200 VUs
-        { duration: '20s', target: 1000 }, // Peak at 1,000 Virtual Users
-        { duration: '10s', target: 0 },    // Ramp down
+        { duration: '5s', target: 500 },   // Warmup to 500 VUs
+        { duration: '20s', target: 3500 }, // Push to 1,500 VUs
+        { duration: '5s', target: 0 },     // Ramp down
     ],
 };
+
+
 
 export default function () {
     const url = 'http://localhost/api/v1/order/place';
@@ -19,9 +21,10 @@ export default function () {
         symbol: 'BTC_USDT',
         type: 'LIMIT',
         side: randomSide,
-        quantity: 1,
+        quantity: 0.001, // $50 per trade instead of $50,000!
         price: 50000,
     });
+
 
     const params = {
         headers: {
@@ -41,5 +44,5 @@ export default function () {
         console.log(`Failed status: ${res.status}, body: ${res.body}`);
     }
 
-    sleep(0.05);
+    sleep(0.01);
 }

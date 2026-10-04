@@ -9,9 +9,9 @@ connectKafkaProducer();
 runKafkaConsumer();
 
 // Seed test user wallet balance in Redis for load testing
-redis.hset("wallet:test-user-id", "balance", "1000000000").catch(() => {});
-redis.hset("wallet:test-user-id", "locked", "0").catch(() => {});
+redis.hset("wallet:test-user-id", "balance", "1000000000").catch(() => { });
+redis.hset("wallet:test-user-id", "locked", "0").catch(() => { });
 
 app.listen(PORT, () => {
-    console.log(`⚡ Node Instance 2 running on port ${PORT}`);
+    console.log(` Node Instance 2 running on port ${PORT}`);
 });

@@ -9,7 +9,7 @@
 [![Prisma ORM](https://img.shields.io/badge/Prisma-ORM%207-2D3748.svg?style=flat-square&logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![OpenAI Protocol](https://img.shields.io/badge/AI-OpenAI%20Tool%20Calling-412991.svg?style=flat-square&logo=openai&logoColor=white)](https://openai.com/)
 
-> **A mission-critical, double-entry financial ledger and matching engine capable of processing 4,200+ RPS with sub-millisecond atomic wallet locking, paired with an autonomous Agentic AI Co-Pilot for natural language treasury management, P2P settlements, crypto market intelligence, and trade execution.**
+> **A mission-critical, double-entry financial ledger and matching engine capable of processing 1500+ RPS with sub-millisecond atomic wallet locking, paired with an autonomous Agentic AI Co-Pilot for natural language treasury management, P2P settlements, crypto market intelligence, and trade execution.**
 
 ---
 

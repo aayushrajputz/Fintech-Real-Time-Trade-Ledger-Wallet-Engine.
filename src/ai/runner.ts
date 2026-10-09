@@ -36,29 +36,11 @@ export async function dispatchToolCall(toolName: string, rawArgs: string) {
         case "get_wallet_balance":
             return await executeGetWalletBalance({ userId: sessionUserId });
         case "transfer_funds":
-
-            const idempotencyKey = `tx:${currentAuthUser.id}:${args.receiverUserId}:${args.amount}`;
-            const lock = await IdempotencyCheck.checkAndLock(idempotencyKey)
-            if (lock.isDuplicate) {
-                if (lock.status === "COMPLETED") {
-                    return { cached: true, ...lock.cachedResult }
-                }
-                return { error: "Transaction already in progress" }
-            }
-            try {
-                const result = await executeTransferFunds({
-                    senderUserId: currentAuthUser.id,
-                    receiverUserId: args.receiverUserId,
-                    amount: args.amount,
-                });
-                // Save successful result
-                await IdempotencyCheck.saveResults(idempotencyKey, result);
-                return result;
-            } catch (err: any) {
-                // Error aaya toh lock release karo taaki user retry kar sake
-                await IdempotencyCheck.releaseLock(idempotencyKey);
-                return { error: err.message };
-            }
+            return await executeTransferFunds({
+                senderUserId: currentAuthUser.id,
+                receiverUserId: args.receiverUserId,
+                amount: args.amount,
+            });
 
 
         case "get_transaction_history":

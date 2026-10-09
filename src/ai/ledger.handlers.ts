@@ -55,35 +55,22 @@ export async function executeGetWalletBalance(args: GetWalletBalanceArgs) {
 
 
 
+import { WalletApplicationService } from "../services/wallet.application.service.js";
+
 export interface TransferFundsArgs {
     senderUserId: string;
     receiverUserId: string;
     amount: number;
+    customIdempotencyKey?: string;
 }
 
 export async function executeTransferFunds(args: TransferFundsArgs) {
-    try {
-        const amount = Number(args.amount)
-        const result = await walletService.transfer(
-            args.senderUserId,
-            args.receiverUserId,
-            amount
-        );
-
-        return {
-            success: true,
-            senderUserId: args.senderUserId,
-            receiverUserId: args.receiverUserId,
-            amount: args.amount,
-            message: "funds transferred successfully",
-            ledgerResult: result
-        }
-    } catch (error: any) {
-        return {
-            success: false,
-            error: error.message || "Error processing transfer"
-        }
-    }
+    return await WalletApplicationService.executeSafeP2PTransfer({
+        senderUserId: args.senderUserId,
+        receiverUserId: args.receiverUserId,
+        amount: Number(args.amount),
+        customIdempotencyKey: args.customIdempotencyKey,
+    });
 }
 export interface GetTransactionHistoryArgs {
     userId: string;

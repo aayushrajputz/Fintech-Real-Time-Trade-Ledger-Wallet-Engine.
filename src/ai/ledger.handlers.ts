@@ -2,8 +2,10 @@ import { prisma } from "../config/db.js";
 import { redis } from "../config/redis.js";
 import * as walletRepo from "../repositories/wallet.repository.js";
 import * as walletService from "../services/wallet.service.js";
-import * as orderService from "../services/order.service.js"
 import { withExponentialBackOff } from "./utils/retry.js";
+import { OrderApplicationService } from "../services/order.application.service.js";
+import { WalletApplicationService } from "../services/wallet.application.service.js";
+
 
 
 
@@ -54,8 +56,6 @@ export async function executeGetWalletBalance(args: GetWalletBalanceArgs) {
 }
 
 
-
-import { WalletApplicationService } from "../services/wallet.application.service.js";
 
 export interface TransferFundsArgs {
     senderUserId: string;
@@ -135,32 +135,37 @@ export async function executePlaceTradingOrder(args: {
     side: "BUY" | "SELL";
     price: number;
     quantity: number;
+    idempotencyKey?: string;
 }) {
-    try {
-        const order = await orderService.placeOrder(
-            args.userId,
-            args.symbol,
-            "LIMIT",
-            args.side,
-            args.quantity,
-            args.price
-        );
+    const result = await OrderApplicationService.publishOrderStream({
+        userId: args.userId,
+        symbol: args.symbol,
+        side: args.side,
+        type: "LIMIT",
+        price: Number(args.price),
+        quantity: Number(args.quantity),
+        idempotencyKey: args.idempotencyKey,
+        source: "AI_AGENT"
 
-        return {
-            success: true,
-            message: "Order placed and queued to Go Matching Engine",
-            orderId: order.id,
-            symbol: order.symbol,
-            side: order.side,
-            price: Number(order.price),
-            quantity: Number(order.quantity),
-            status: order.status,
-        };
-    } catch (err: any) {
+    })
+
+    if (!result.success) {
         return {
             success: false,
-            error: err.message || "Failed to place order",
-        };
+            error: result.error || "failed to submit trading order to stream"
+        }
+    }
+
+    return {
+        success: true,
+        message: result.message,
+        orderId: result.orderId,
+        symbol: args.symbol,
+        side: args.side,
+        price: args.price,
+        quantity: args.quantity,
+        status: "QUEUED_TO_KAFKA",
+        event: result.event,
     }
 }
 

@@ -4,6 +4,7 @@ import { sanitizeUserPrompt, setAuthUser } from "../ai/runner.js";
 import { streamGraphAgent } from "../ai/graph/runner.js";
 import { checkAiRateLimit } from "../ai/utils/rateLimiter.js";
 
+
 const router = Router();
 
 // ─────────────────────────────────────────────────────────────
@@ -49,7 +50,7 @@ router.post("/stream", authenticateJWT, async (req: Request, res: Response) => {
     }
 
     // 3. Set authenticated user context for the agent
-    setAuthUser({ id: user.id, name: user.name, email: user.email });
+    const abortController = new AbortController()
 
     // 4. Set SSE headers
     res.setHeader("Content-Type", "text/event-stream");
@@ -60,11 +61,12 @@ router.post("/stream", authenticateJWT, async (req: Request, res: Response) => {
 
     // Handle client disconnect (cleanup)
     req.on("close", () => {
+        abortController.abort()
         res.end();
     });
 
     // 5. Stream agent execution
-    await streamGraphAgent(prompt, res);
+    await streamGraphAgent(prompt, user, res, abortController.signal);
 });
 
 export default router;

@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.routes.js";
 import walletRoutes from "./routes/wallet.routes.js";
 import orderRoutes from "./routes/order.routes.js"
 import ledgerRoutes from "./routes/ledger.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 import "./config/redis.js";
 import { correlationMiddleware } from "./middlewares/correlation.middleware.js";
 import client from "prom-client";
@@ -33,6 +34,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/wallet", walletRoutes);
 app.use("/api/v1/order", orderRoutes);
 app.use("/api/v1/ledger", ledgerRoutes);
+app.use("/api/v1/ai", aiRoutes);
 
 
 

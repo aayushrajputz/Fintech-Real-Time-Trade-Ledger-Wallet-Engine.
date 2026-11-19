@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { resolveTradingPair } from "../utils/symbol.resolver.js";
 
+
 export const UserUUIDSchema = z.object({
     userId: z.string().uuid().min(36, "invalid uuid"),
 
@@ -58,13 +59,20 @@ export const GetWalletBalanceSchema = z.object({
     userId: z.string().uuid().optional(),
 });
 
+export const AuditEntityGraphSchema = z.object({
+    entityId: z.string().min(3, "Entity ID must be at least 3 characters"),
+    maxHops: z.number().int().min(1).max(4, "Max hops must be between 1 and 4").default(2).optional()
+});
+
 export const ToolValidationSchema: Record<string, z.ZodSchema<any>> = {
+
     get_wallet_balance: GetWalletBalanceSchema,
     transfer_funds: TransferFundSchema,
     get_transaction_history: GetTransactionHistorySchema,
     search_user: SearchUserSchema,
     place_trading_order: PlaceTradingOrderSchema,
     get_market_ticker: GetMarketTickerSchema,
+    audit_entity_graph: AuditEntityGraphSchema,
 };
 export function validateToolArgs(toolName: string, rawArgs: string) {
     let parsed: any;
@@ -93,10 +101,7 @@ export function validateToolArgs(toolName: string, rawArgs: string) {
     }
     return { success: true, data: result.data };
 }
-
-
-
-
+export type AuditEntityGraphDTO = z.infer<typeof AuditEntityGraphSchema>;
 export type TransferFundDTO = z.infer<typeof TransferFundSchema>;
 export type PlaceTradingOrderDTO = z.infer<typeof PlaceTradingOrderSchema>;
 export type SearchUserDTO = z.infer<typeof SearchUserSchema>;

@@ -134,6 +134,27 @@ export const ledgerTools: OpenAI.ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "audit_entity_graph",
+      description: "Performs multi-hop Knowledge Graph traversal (GraphRAG) to audit a user, wallet, or IP address for suspicious circular money flows, wash-trading rings, or connections to OFAC-sanctioned / blacklisted syndicates.",
+      parameters: {
+        type: "object",
+        properties: {
+          entityId: {
+            type: "string",
+            description: "The user UUID, wallet ID, or IP to audit in the Knowledge Graph",
+          },
+          maxHops: {
+            type: "number",
+            description: "Depth of relational graph traversal (1 to 4 hops, default: 2)",
+          },
+        },
+        required: ["entityId"],
+      },
+    },
+  },
 
 
 ];

@@ -5,6 +5,7 @@ import * as walletService from "../services/wallet.service.js";
 import { withExponentialBackOff } from "./utils/retry.js";
 import { OrderApplicationService } from "../services/order.application.service.js";
 import { WalletApplicationService } from "../services/wallet.application.service.js";
+import { auditEntityGraph } from "./rag/graph.service.js";
 
 
 
@@ -274,6 +275,25 @@ export async function executeGetMarketTicker(args: { symbol: string }) {
     } catch (err: any) {
         return {
             error: `Live market fetch failed: ${err.message}`,
+        };
+    }
+}
+
+export async function executeAuditEntityGraph(args: { entityId: string; maxHops?: number }) {
+    try {
+        const report = await auditEntityGraph(args.entityId, args.maxHops ?? 2);
+        return {
+            success: true,
+            targetEntity: report.targetEntityId,
+            hasBlacklistedConnection: report.hasBlacklistedConnection,
+            riskScore: report.highestRiskScore,
+            summary: report.graphContextText,
+            flaggedPaths: report.flaggedPaths
+        };
+    } catch (err: any) {
+        return {
+            success: false,
+            error: `Graph traversal failed: ${err?.message}`
         };
     }
 }

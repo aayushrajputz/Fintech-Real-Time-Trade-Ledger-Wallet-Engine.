@@ -7,7 +7,9 @@ import {
     executeGetTransactionHistory,
     executeSearchUser,
     executePlaceTradingOrder,
-    executeGetMarketTicker
+    executeGetMarketTicker,
+    executeAuditEntityGraph
+
 } from "./ledger.handlers.js";
 import { checkAiRateLimit } from "./utils/rateLimiter.js";
 
@@ -60,7 +62,8 @@ export async function dispatchToolCall(toolName: string, rawArgs: string) {
             });
         case "get_market_ticker":
             return await executeGetMarketTicker(args);
-
+        case "audit_entity_graph":
+            return await executeAuditEntityGraph(args);
         default:
             return { error: `Unknown tool requested: ${toolName}` };
     }

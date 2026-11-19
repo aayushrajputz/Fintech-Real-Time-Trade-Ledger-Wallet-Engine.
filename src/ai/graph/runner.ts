@@ -45,6 +45,7 @@ export async function runGraphAgent(userPrompt: string) {
 // ─────────────────────────────────────────────────────────────
 const TOOL_STATUS_MAP: Record<string, string> = {
     get_wallet_balance: " Fetching wallet balance...",
+    audit_entity_graph: "🕸️ Traversing Knowledge Graph & analyzing multi-hop risk paths...",
     transfer_funds: " Reserving funds & executing transfer...",
     get_transaction_history: " Loading transaction history...",
     search_user: " Searching user...",
